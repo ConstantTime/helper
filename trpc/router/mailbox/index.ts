@@ -8,6 +8,7 @@ import { getLatestEvents } from "@/lib/data/dashboardEvent";
 import { getGuideSessionsForMailbox } from "@/lib/data/guide";
 import { getMailboxInfo } from "@/lib/data/mailbox";
 import { protectedProcedure } from "@/trpc/trpc";
+import { availabilityRouter } from "./availability";
 import { conversationsRouter } from "./conversations/index";
 import { customersRouter } from "./customers";
 import { faqsRouter } from "./faqs";
@@ -135,6 +136,7 @@ export const mailboxRouter = {
         nextCursor,
       };
     }),
+  availability: availabilityRouter,
   conversations: conversationsRouter,
   faqs: faqsRouter,
   members: membersRouter,

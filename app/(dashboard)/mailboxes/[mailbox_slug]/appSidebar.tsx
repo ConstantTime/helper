@@ -4,6 +4,8 @@ import { BarChart, CheckCircle, ChevronDown, Inbox, Settings, Ticket, User, User
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AccountDropdown } from "@/app/(dashboard)/mailboxes/[mailbox_slug]/accountDropdown";
+
+import { AvailabilityStatusDropdown } from "@/components/availabilityStatusDropdown";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +25,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useUserAvailabilityStatus } from "@/lib/realtime/availabilityHooks";
 import { api } from "@/trpc/react";
 
 declare global {
@@ -37,6 +40,12 @@ export function AppSidebar({ mailboxSlug }: { mailboxSlug: string }) {
   const { data: mailboxes } = api.mailbox.list.useQuery();
   const { data: openCounts } = api.mailbox.openCount.useQuery({ mailboxSlug });
   const currentMailbox = mailboxes?.find((m) => m.slug === mailboxSlug);
+
+  const { data: myAvailability } = api.mailbox.availability.getMyStatus.useQuery({ mailboxSlug });
+  const { status: realtimeStatus, customMessage } = useUserAvailabilityStatus(currentMailbox?.id || 0);
+
+  const currentStatus = myAvailability?.status || (realtimeStatus ?? "offline");
+  const currentMessage = myAvailability?.customMessage || customMessage;
 
   return (
     <Sidebar
@@ -148,7 +157,16 @@ export function AppSidebar({ mailboxSlug }: { mailboxSlug: string }) {
         </div>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="space-y-2">
+        <div className="px-2">
+          <AvailabilityStatusDropdown
+            mailboxSlug={mailboxSlug}
+            currentStatus={currentStatus}
+            customMessage={currentMessage}
+            className="w-full justify-start group-data-[collapsible=icon]:justify-center"
+          />
+        </div>
+
         <AccountDropdown />
       </SidebarFooter>
     </Sidebar>
